@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {text-align: center; padding-top: 20px;}
+    .scopes {text-align: left; margin: 20px auto; max-width: 500px;}
+    .btn {padding: 10px; margin: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer;}
+    #popupButton {display: none;}
+  </style>
+</head>
+<body>
+  <h1>OAuth Token and Scope Selection</h1>
+  <div class="scopes">
+    <input type="checkbox" id="calendar" name="scopes" value="calendar"> Calendar Full Access<br>
+    <input type="checkbox" id="calendarEvents" name="scopes" value="calendar.events"> Calendar Events<br>
+    <input type="checkbox" id="calendarEventsReadonly" name="scopes" value="calendar.events.readonly"> Calendar Events Read-Only<br>
+    <input type="checkbox" id="calendarReadonly" name="scopes" value="calendar.readonly"> Calendar Read-Only<br>
+    <input type="checkbox" id="calendarSettingsReadonly" name="scopes" value="calendar.settings.readonly"> Calendar Settings Read-Only<br>
+    <input type="checkbox" id="driveActivity" name="scopes" value="drive.activity"> Drive Activity<br>
+    <input type="checkbox" id="driveActivityReadonly" name="scopes" value="drive.activity.readonly"> Drive Activity Read-Only<br>
+    <input type="checkbox" id="mail" name="scopes" value="mail.google.com/"> Gmail Full Access<br>
+    <input type="checkbox" id="gmailCompose" name="scopes" value="gmail.compose"> Gmail Compose<br>
+    <input type="checkbox" id="gmailSend" name="scopes" value="gmail.send"> Gmail Send<br>
+    <input type="checkbox" id="documents" name="scopes" value="documents"> Docs Full Access<br>
+    <input type="checkbox" id="documentsReadonly" name="scopes" value="documents.readonly"> Docs Read-Only<br>
+    <input type="checkbox" id="drive" name="scopes" value="drive"> Drive Full Access<br>
+    <input type="checkbox" id="spreadsheets" name="scopes" value="spreadsheets"> Sheets Access<br>
+  </div>
+  <button id="requestTokenButton" class="btn">Request Token</button>
+  <button id="popupButton" class="btn">Show Token</button>
+
+  <script>
+    let scopes = [];
+    let token = null;
+
+    document.getElementById('requestTokenButton').addEventListener('click', function() {
+      scopes = Array.from(document.querySelectorAll('input[name="scopes"]:checked')).map(checkbox => checkbox.value);
+      
+      if (scopes.length === 0) {
+        alert('Please select at least one scope.');
+        return;
+      }
+
+      google.script.run.withSuccessHandler(function(newToken) {
+        token = newToken;
+        // Enable the show token button
+        document.getElementById('popupButton').style.display = 'inline-block';
+      }).getToken(scopes);
+    });
+
+    document.getElementById('popupButton').addEventListener('click', function() {
+      if (token) {
+        var win = window.open('', 'TokenWindow', 'width=600,height=400');
+        win.document.write('<h2>Your OAuth Token and Scopes</h2>');
+        win.document.write('<p>Token: ' + JSON.stringify(token) + '</p>');
+        win.document.write('<p>Scopes:</p><ul>');
+        scopes.forEach(scope => win.document.write('<li>' + scope + '</li>'));
+        win.document.write('</ul>');
+      } else {
+        alert('No token available. Please request a token first.');
+      }
+    });
+  </script>
+</body>
+</html>
